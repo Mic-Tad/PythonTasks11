@@ -18,29 +18,30 @@ def delete_trans(t_id:str):
 
 @app.post('/post/user/{u_id}/transaction')
 def add_trans(u_id,transaction_id='tid2000',
-            transaction_status=Status.Successful,
+            transaction_status='Successful',
             amount=0,
             recipient_id='uid2000',
             currency='USD'):
     mongo_actions.add_transaction(user_id=u_id,details=TransactionDetails(
-            transaction_id='tid2000',
-            transaction_status=Status.Successful,
-            amount=0,
-            recipient_id='uid2000',
+            transaction_id=transaction_id,
+            transaction_status=Status[transaction_status],
+            amount=amount,
+            recipient_id=recipient_id,
             currency=ClCurrency[currency]
     ))
     return 'Done'
 
 @app.put('/put/transaction')
 def update_trans(transaction_id='tid2000',
-            transaction_status=Status.Successful,
+            transaction_status='Successful',
             amount=0,
             recipient_id='uid2000',
             currency='USD'):
-    mongo_actions.update_transaction(TransactionDetails(transaction_id='tid2000',
-            transaction_status=Status.Successful,
-            amount=0,
-            recipient_id='uid2000',
+    print(amount)
+    mongo_actions.update_transaction(TransactionDetails(transaction_id=transaction_id,
+            transaction_status=Status[transaction_status],
+            amount=amount,
+            recipient_id=recipient_id,
             currency=ClCurrency[currency]))
-    return 'Updated successfully'
+    return amount
 

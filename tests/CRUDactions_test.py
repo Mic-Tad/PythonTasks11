@@ -1,21 +1,21 @@
 from unittest import TestCase, main
 
-import mentorTask10.list_generator
-from mentorTask10.mongo_actions import import_entity, import_entities, lazy_update, get_data_slice, clear_db
+
+from mentorTask11.CRUDactions import add_trans,update_trans,delete_trans,get_trans
 import pymongo
-import datetime as dt
-from mentorTask10.list_generator import generate_list_of_entities, generate_list_of_n_entities, START_DATE, END_DATE
-from mentorTask10.cl_currency import ClCurrency
-from mentorTask10.cl_daily_bar import ClDailyBar
+from mentorTask11.cl_currency import ClCurrency
+from mentorTask11.statuses import Status
+from mentorTask11.transaction_details import TransactionDetails
 
 
 
 client = pymongo.MongoClient("localhost:27017")
-db = client.cl_daily_bars
-coll = db.Tests
+db = client.Market
+coll1 = db.Transactions
+coll2 = db.Users
 
 
-class MongoActionsTest(TestCase):
+class CRUDactionsTest(TestCase):
     def test_import_entity_value_check(self):
         clear_db(coll)
         e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)

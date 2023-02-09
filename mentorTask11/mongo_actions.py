@@ -16,7 +16,7 @@ def add_user(user: User, coll2=coll2):
 
 
 def update_user(user: User, coll2=coll2):
-    if len(coll2.find_one({"UserId": user.user_id})) < 1:
+    if coll2.count_documents({"UserId": user.user_id}) < 1:
         add_user(user=user)
     else:
         filter = {"UserId": user.user_id}
@@ -25,7 +25,7 @@ def update_user(user: User, coll2=coll2):
 
 
 def add_transaction(user_id: str, details: TransactionDetails, coll1=coll1, coll2=coll2):
-    if len(coll2.find_one({"UserId": user_id})) < 1:
+    if coll2.count_documents({"UserId": user_id}) < 1:
         add_user(User(user_id=user_id, transactions=[details.transaction_id]))
     else:
         l = list(coll2.find_one({"UserId": user_id})["Transactions"])
@@ -84,7 +84,7 @@ def delete_transaction(transaction_id: str, coll1=coll1):
 def clear_db(coll=coll1):
     coll.delete_many({})
 
-def create_transactions(user:User,n:int):
+def create_transactions(user:User,n:int,coll1=coll1,coll2=coll2):
     for i in range(n):
         add_transaction(user_id=user.user_id,details=TransactionDetails(
             transaction_id=f'tid200{i}',
@@ -92,17 +92,14 @@ def create_transactions(user:User,n:int):
             amount=i*i+200%(i+1),
             recipient_id=f'uid234{i*2}',
             currency=ClCurrency.EUR
-        ))
+        ),coll2=coll2,coll1=coll1)
 
 if __name__ == "__main__":
-    clear_db()
-    clear_db(coll2)
+    
     us1 = User("3214", [])
     n=20
     trad = TransactionDetails(transaction_id='tid200')
-    add_user(us1)
-    add_transaction(us1.user_id, trad)
-    create_transactions(us1,n)
-    update_transaction(TransactionDetails(amount=2))
+    
+    update_transaction(TransactionDetails(amount=7))
 
     print("ok")
