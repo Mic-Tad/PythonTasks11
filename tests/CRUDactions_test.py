@@ -1,104 +1,40 @@
 from unittest import TestCase, main
+from fastapi.testclient import TestClient
 
-
-from mentorTask11.CRUDactions import add_trans,update_trans,delete_trans,get_trans
+from mentorTask11.CRUDactions import add_trans,update_trans,delete_trans,get_trans,app
 import pymongo
+from mentorTask11.user import User
 from mentorTask11.cl_currency import ClCurrency
 from mentorTask11.statuses import Status
 from mentorTask11.transaction_details import TransactionDetails
-
+from mentorTask11.mongo_actions import clear_db,add_transaction,add_user
 
 
 client = pymongo.MongoClient("localhost:27017")
 db = client.Market
 coll1 = db.Transactions
 coll2 = db.Users
-
+client=TestClient(app)
 
 class CRUDactionsTest(TestCase):
-    def test_import_entity_value_check(self):
-        clear_db(coll)
-        e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)
-        import_entity(e, coll)
-        self.assertEqual(coll.find_one({'AssetName': 'Dell'})['Value'], 2305)
+    def test_get_trans_value_check(self):
+        us1 = User("3214", [])
+        add_user(us1,coll2=coll2)
+        add_transaction(user_id=us1.user_id,details=TransactionDetails(
+            transaction_id='tid200342',
+            transaction_status=Status.Successful,
+            amount=33,
+            recipient_id='uid2345',
+            currency=ClCurrency.EUR
+        ),coll2=coll2,coll1=coll1)
+        response=client.get('/get/tid200342')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(),{
+                    "transaction_id": "tid200342",
+                    "transaction_status": 1,
+                    "amount": "33",
+                    "currency": 3,
+                    "recipient_id": "uid2345"
+        })
 
-    def test_import_entities_value_check(self):
-        clear_db(coll)
-        e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)
-        e1 = ClDailyBar(dt.datetime(2001, 1, 1), 2325.0, "Doll", ClCurrency.F_E_CHF)
-
-        import_entities([e, e1], coll)
-
-        self.assertEqual(coll.find_one({'AssetName': 'Dell'})['Value'], 2305)
-
-    def test_import_entities_len_check(self):
-        clear_db(coll)
-        st_y = 2000
-        e_y = 2000
-        st_m = 1
-        e_m = 1
-        st_d = 2
-        e_d = 20
-        l = generate_list_of_entities(3, st_y=st_y, e_y=e_y, st_m=st_m, e_m=e_m, st_d=st_d, e_d=e_d)
-
-        import_entities(l, coll)
-
-        self.assertEqual(len(list(coll.find({}))), e_d - st_d + 1)
-
-    def test_lazy_update_value_check(self):
-        clear_db(coll)
-        e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)
-        e1 = ClDailyBar(dt.datetime(2001, 1, 1), 2325.0, "Doll", ClCurrency.F_E_CHF)
-        l = [e, e1]
-        import_entities(l, coll)
-        lazy_update(e, {'AssetName': 'Cell'}, coll=coll)
-
-        self.assertEqual(coll.find_one({'AssetName': 'Cell'})['Value'], 2305)
-
-    def test_lazy_update_len_check(self):
-        clear_db(coll)
-        e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)
-        e1 = ClDailyBar(dt.datetime(2001, 1, 1), 2325.0, "Doll", ClCurrency.F_E_CHF)
-        l = [e, e1]
-        import_entities(l, coll)
-        lazy_update(e, {'AssetName': 'Cell'}, coll=coll)
-
-        self.assertEqual(len(list(coll.find({}))), len(l))
-
-    def test_lazy_update_laziness_check(self):
-        clear_db(coll)
-        e = ClDailyBar(dt.datetime(2000, 1, 1), 2305.0, "Dell", ClCurrency.F_E_CHF)
-        e1 = ClDailyBar(dt.datetime(2001, 1, 1), 2325.0, "Doll", ClCurrency.F_E_CHF)
-        l = [e, e1]
-        import_entities(l, coll)
-        id_of_entity = coll.find_one({'AssetName': 'Dell'})['_id']
-        lazy_update(e, {'AssetName': 'Dell'}, coll=coll)
-
-        self.assertEqual(coll.find_one({'AssetName': 'Dell'})['_id'], id_of_entity)
-
-    def test_get_data_slice_len_test(self):
-        clear_db(coll)
-        le = 60
-        import_entities(generate_list_of_n_entities(le), coll)
-        l = get_data_slice(mentorTask10.list_generator.ASSETS[1], coll=coll)
-        self.assertEqual(len(l), int((le - 1) / len(mentorTask10.list_generator.ASSETS.items()) + 1))
-
-    def test_get_data_slice_type_test(self):
-        clear_db(coll)
-        le = 60
-        import_entities(generate_list_of_n_entities(le), coll)
-        l = get_data_slice(mentorTask10.list_generator.ASSETS[1], coll=coll)
-        self.assertEqual(type(l), type([]))
-
-    def test_get_data_slice_data_correctness_test(self):
-        clear_db(coll)
-        le = 60
-        import_entities(generate_list_of_n_entities(le), coll)
-        e_d = END_DATE - dt.timedelta(days=1)
-        s_d = START_DATE + dt.timedelta(days=1)
-        l = get_data_slice(mentorTask10.list_generator.ASSETS[1], from_date=s_d,
-                           to_date=e_d, coll=coll)
-        for i in l:
-            with self.subTest(i=i):
-                self.assertGreaterEqual(e_d, i.date)
-                self.assertLessEqual(s_d, i.date)
+    
