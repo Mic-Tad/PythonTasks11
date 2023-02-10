@@ -17,7 +17,7 @@ class TransactionDetails:
         if __name == "transaction_id":
             self.__dict__[__name] = __value
         elif __name == "amount":
-            self.__dict__[__name] = __value
+            self.__dict__[__name] = int(__value)
         elif __name == "currency":
             if type(__value) == str:
                 __value = ClCurrency[__value]
