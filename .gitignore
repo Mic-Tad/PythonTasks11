@@ -3,3 +3,4 @@ requirments.txt
 .idea
 /tests/__pycache__
 /tests/.pytest_cache
+/mentorTask11/openapi
