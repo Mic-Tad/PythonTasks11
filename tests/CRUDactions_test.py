@@ -4,7 +4,6 @@ from unittest import TestCase, main
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-sys.path.insert(0, "C:/Users/mykhailot/PyTask/PythonTasks11/mentorTask11")
 import CRUDactions
 import pymongo
 from cl_currency import ClCurrency
